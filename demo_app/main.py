@@ -32,8 +32,12 @@ def metrics():
 
 @app.get("/stress")
 def stress():
-    """Endpoint to simulate CPU load for testing anomaly detection."""
-    result = sum(i * i for i in range(1_000_000))
+    """Endpoint to simulate sustained CPU load."""
+    import time
+    end_time = time.time() + 15  # run for 15 seconds
+    result = 0
+    while time.time() < end_time:
+        result = sum(i * i for i in range(100_000))
     return {"status": "stress_done", "result": result}
 
 

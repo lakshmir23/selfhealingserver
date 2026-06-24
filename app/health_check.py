@@ -19,8 +19,7 @@ def is_container_running(container_name: str = TARGET_CONTAINER) -> bool:
         log_event("HEALTH", f"Docker check error: {e}", "ERROR")
         return False
 
-
-def is_app_responding(url: str = "http://localhost:8080/health") -> bool:
+def is_app_responding(url: str = "http://demo_app:8080/health") -> bool:
     """Check if the application HTTP endpoint responds correctly."""
     try:
         response = httpx.get(url, timeout=5)

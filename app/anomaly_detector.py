@@ -4,6 +4,28 @@ import os
 from sklearn.ensemble import IsolationForest
 from app.config import MODEL_PATH
 from app.logger import log_event
+import csv
+from app.config import METRICS_FILE
+
+
+def load_real_training_data(min_samples: int = 20) -> list | None:
+    """Load real metrics from CSV for training. Returns None if not enough data."""
+    if not os.path.exists(METRICS_FILE):
+        return None
+
+    data = []
+    with open(METRICS_FILE, "r") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            try:
+                cpu, ram, disk = float(row[1]), float(row[2]), float(row[3])
+                data.append([cpu, ram, disk])
+            except (IndexError, ValueError):
+                continue
+
+    if len(data) < min_samples:
+        return None
+    return data
 
 
 def train_model(training_data: list) -> IsolationForest:
@@ -53,12 +75,11 @@ def is_anomaly(cpu: float, ram: float, disk: float, model: IsolationForest = Non
 
 
 def generate_synthetic_training_data(n_samples: int = 500) -> list:
-    """Generate synthetic normal metric data for initial model training."""
     np.random.seed(42)
     data = []
     for _ in range(n_samples):
-        cpu = np.random.uniform(10, 70)
-        ram = np.random.uniform(20, 75)
-        disk = np.random.uniform(30, 80)
+        cpu = np.random.uniform(0, 5)
+        ram = np.random.uniform(10, 25)
+        disk = np.random.uniform(0, 2)
         data.append([cpu, ram, disk])
     return data

@@ -7,15 +7,20 @@ from app.anomaly_detector import is_anomaly, load_model, train_model, generate_s
 from app.healer import heal
 
 from app.logger import log_metrics, log_event
-
+from app.anomaly_detector import is_anomaly, load_model, train_model, generate_synthetic_training_data, load_real_training_data
 
 def initialize_model():
-    """Load existing model or train a new one with synthetic data."""
+    """Load existing model, or train on real data, or fall back to synthetic."""
     model = load_model()
     if model is None:
-        log_event("INIT", "Training a new model with synthetic data...")
-        training_data = generate_synthetic_training_data(500)
-        model = train_model(training_data)
+        real_data = load_real_training_data(min_samples=20)
+        if real_data:
+            log_event("INIT", f"Training on {len(real_data)} real collected samples...")
+            model = train_model(real_data)
+        else:
+            log_event("INIT", "Not enough real data. Training with synthetic data...")
+            training_data = generate_synthetic_training_data(500)
+            model = train_model(training_data)
     return model
 
 
@@ -46,6 +51,7 @@ def monitor_cycle(model):
         
 
     log_event("CYCLE", f"Cycle complete. Action: {action}")
+    print(f"DEBUG → CPU:{metrics['cpu']} RAM:{metrics['ram']} DISK:{metrics['disk']} health:{health} anomaly:{anomaly}", flush=True)    
     return action
 
 
