@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: monitoring-stack
+    env: docker
+    plan: free
+    dockerfilePath: ./docker-compose.yml
+    autoDeploy: true
